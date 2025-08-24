@@ -34,6 +34,7 @@ func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
 	require.NoError(t, err)
+	defer db.Close()
 
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -43,6 +44,8 @@ func TestAddGetDelete(t *testing.T) {
 	number, err := store.Add(parcel)
 	require.NoError(t, err)
 	require.NotEmpty(t, number)
+
+	parcel.Number = number
 
 	// get
 	// получите только что добавленную посылку, убедитесь в отсутствии ошибки
@@ -66,6 +69,7 @@ func TestSetAddress(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
 	require.NoError(t, err)
+	defer db.Close()
 
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -75,6 +79,7 @@ func TestSetAddress(t *testing.T) {
 	number, err := store.Add(parcel)
 	require.NoError(t, err)
 	require.NotEmpty(t, number)
+	parcel.Number = number
 
 	// set address
 	// обновите адрес, убедитесь в отсутствии ошибки
@@ -95,6 +100,7 @@ func TestSetStatus(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
 	require.NoError(t, err)
+	defer db.Close()
 
 	store := NewParcelStore(db)
 	parcel := getTestParcel()
@@ -104,6 +110,7 @@ func TestSetStatus(t *testing.T) {
 	number, err := store.Add(parcel)
 	require.NoError(t, err)
 	require.NotEmpty(t, number)
+	parcel.Number = number
 
 	// set status
 	// обновите статус, убедитесь в отсутствии ошибки
@@ -122,6 +129,7 @@ func TestGetByClient(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
 	require.NoError(t, err)
+	defer db.Close()
 
 	store := NewParcelStore(db)
 
@@ -157,14 +165,14 @@ func TestGetByClient(t *testing.T) {
 	// убедитесь в отсутствии ошибки
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
 	require.NoError(t, err)
-	assert.Equal(t, len(parcels), len(storedParcels))
+	assert.Len(t, parcels, len(storedParcels))
 
 	// check
 	for _, parcel := range storedParcels {
 		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
 		// убедитесь, что значения полей полученных посылок заполнены верно
-		require.NotEmpty(t, parcelMap[parcel.Number])
+		assert.NotEmpty(t, parcelMap[parcel.Number])
 		assert.Equal(t, parcelMap[parcel.Number], parcel)
 	}
 }
